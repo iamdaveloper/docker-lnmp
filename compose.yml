@@ -1,5 +1,10 @@
 version: '3.8'
 
+#/etc/hosts
+x-hosts: &hosts
+  extra_hosts:
+    - local.docker.test:${NGINX_IP}
+
 services:
   ### NGINX ###
   nginx:
@@ -17,9 +22,42 @@ services:
       - ${WEB_ROOT_PATH}:/var/www/
       - ${NGINX_LOG_PATH}:/var/log/nginx/
     networks:
-      backend:
+      development:
         ipv4_address: ${NGINX_IP}
 
+  php82:
+    build:
+      context: ./php82
+      #args:
+      #  - EXT_GD=true
+      #  - EXT_REDIS=true
+      #  - EXT_GRPC=true
+      #  - EXT_PROTOBUF=true
+      #  - EXT_MEMCACHED=true
+      #  - EXT_SWOOLED=true
+    container_name: php82
+    privileged: true
+    restart: always
+    cap_add:
+      - SYS_PTRACE
+    ports:
+      - "9082:9082"
+      #- "8882:8882"
+    #/etc/hosts
+    <<: *hosts
+    volumes:
+      - ./php82/config/php.ini:/usr/local/etc/php/php.ini
+      - ./php82/config/php-fpm.conf:/usr/local/etc/php-fpm.conf
+      - ./php82/config/php-fpm.d:/usr/local/etc/php-fpm.d
+      #- ./id_rsa.pub:/root/.ssh/id_rsa.pub
+      #- ./id_rsa:/root/.ssh/id_rsa
+      - ${WEB_ROOT_PATH}:/var/www/
+      - ./logs/php82/:/var/log/php/
+      - ./logs/app/:/data/log/
+    networks:
+      development:
+        ipv4_address: ${PHP82_IP}
+
 networks:
-  backend:
+  development:
     external: true
