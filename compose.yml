@@ -3,7 +3,7 @@ version: '3.8'
 #/etc/hosts
 x-hosts: &hosts
   extra_hosts:
-    - local.docker.test:${NGINX_IP}
+    - ${APP_NAME}:${NGINX_IP}
 
 services:
   ### NGINX ###
